@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Laravel RESTful Routes Generator</title>
+        <style>
+            #container{
+                margin-left: 20px;
+                margin-top: 20px;
+            }
+
+            #label{
+                margin-right: 5px;
+            }
+
+            #output{
+                margin-top: 15px;
+                margin-left: 50px;
+                font-size: 1.3em;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Laravel RESTful Routes Generator</h1>
+        <div id="container">
+            <p><label for="path" id="label">Path name:</label><input type="text" id="path" onkeyup= "return generate_routes();"/></p>
+            <p><input type="checkbox" id="controller" checked /><label for="controller">Plural Controller name</label></p>
+            <p><input type="checkbox" id="bind"/><label for="bind">Route Model Binding</label></p>
+            <input type="checkbox" id="route-name"/><label for="route-name">Add route name</label>
+            <div id="output"></div>
+        </div>
+
+        <script>
+
+            http_methods = ['get(\'/', 'get(\'/', 'post(\'/', 'get(\'/', 'get(\'/', 'patch(\'/', 'delete(\'/'];
+
+            pathsegments_chop_1 = ['\', ', '/create\', ', '\', ', '/', '/', '/', '/'];
+
+            pathsegments_chop_2 = ['', '', '', '\', ', '/edit\', ', '\', ', '\', '];
+
+            routes_names = ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'];
+
+            // The indexes of segment paths that require path parameter such as {id}
+            segments_that_need_parameter = [3, 4, 5, 6];
+
+            actions = ['index\')', 'create\')', 'store\')', 'show\')', 'edit\')', 'update\')', 'destroy\')'];
+
+            pathinput = document.getElementById('path');
+            output = document.getElementById('output');
+            checkbox_bind = document.getElementById('bind');
+            checkbox_controller = document.getElementById('controller');
+            checkbox_route_name = document.getElementById('route-name');
+
+            function generate_routes() {
+
+                var dynamic_name = pathinput.value;
+
+                var output_str = '';
+
+                for (var i = 0; i < 7; i++)
+                {
+                    output_str += "<code>";
+                    output_str += 'Route::';
+                    output_str += http_methods[i];
+                    output_str += dynamic_name;
+                    output_str += pathsegments_chop_1[i];
+                    output_str += get_path_parameter(dynamic_name, i);
+                    output_str += pathsegments_chop_2[i];
+                    output_str += '\'';
+                    output_str += get_controller_name(dynamic_name);
+                    output_str += 'Controller@';
+                    output_str += actions[i];
+                    output_str += get_route_name(dynamic_name, i);
+                    output_str += ';';
+                    output_str += "</code>";
+                    output_str += "<br />";
+                }
+                output.innerHTML = output_str;
+            }
+
+            function get_path_parameter(dynamic_name, index) {
+                if (segments_that_need_parameter.contains(index)) {
+                    if (checkbox_bind.checked) {
+                        dynamic_name = remove_last_s(dynamic_name);
+                        return '{' + dynamic_name + '}';
+                    } else {
+                        return '{id}';
+                    }
+                }
+                return '';
+            }
+
+            function get_controller_name(controller) {
+                controller_name = controller;
+                if (!checkbox_controller.checked) {
+                    controller_name = remove_last_s(controller);
+                }
+                return capitalFirst(controller_name);
+            }
+
+            function get_route_name(dynamic_name, index){
+                if(checkbox_route_name.checked){
+                     return `->name('${dynamic_name}.${routes_names[index]}')`;
+                }
+                return '';
+            }
+
+            function capitalFirst(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            checkbox_bind.addEventListener('change', function () {
+                generate_routes();
+            });
+
+            checkbox_controller.addEventListener('change', function () {
+                generate_routes();
+            });
+
+            checkbox_route_name.addEventListener('change', function () {
+                generate_routes();
+            });
+
+            function remove_last_s(word) {
+                var last_char = word.charAt(word.length - 1);
+                if (( word.length > 1) && ((last_char === 's') || (last_char === 'S'))) {
+                    return word.slice(0, word.length - 1);
+                } else {
+                    return word;
+                }
+            }
+
+            // Extension to arrays
+            Array.prototype.contains = function (obj) {
+                var i = this.length;
+                while (i--) {
+                    if (this[i] === obj) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        </script>
+    </body>
+</html>
