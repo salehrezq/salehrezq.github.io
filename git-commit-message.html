@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>git commit messages metrics validator</title>
+        <style>
+            * {
+                font-family: Helvetica;
+                font-size: 18px;
+            }
+
+            body {
+                margin: 30px;
+            }
+
+            .container {
+                width: fit-content;
+            }
+
+            .lines-counter {
+                height: fit-content;
+                width: 20px;
+                display: inline-block;
+                margin-right: 2px;
+            }
+
+            .block {
+                display: block;
+            }
+
+            .inline-block {
+                display: inline;
+            }
+
+            textarea {
+                float: right;
+            }
+
+            .redBorder {
+                border-color: #f57d00;
+                border-width: 0 30px 0 30px;
+            }
+
+            .red {
+                color: #e75a29;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="container">
+            <div>
+                <div class="lines-counter" name="set_a_content" readonly="readonly"/>
+            </div>
+            <textarea id="message" class="inline-block" rows="15" cols="70" name="set_a"></textarea>
+        </div>
+
+        <script src="jquery.js"></script>
+        <script>
+            function $CharCount($input) {
+
+                var $textarea = $("#message");
+                var $charCounterArea = $("[name=set_" + $input + "_content]");
+
+                $textarea.keyup(function () {
+
+                    var arrayOfLines = $("[name=set_" + $input + "]").val().split('\n');
+                    var tempArr = [];
+                    var $lineContent;
+                    var wellFormatted = true;
+
+                    if (arrayOfLines !== null) {
+
+                        var length = arrayOfLines.length;
+
+                        for (var i = 0; i < length; i++) {
+                            $lineContent = arrayOfLines[i];
+
+                            var span = "";
+                            var lineLength = $lineContent.length;
+                            if (i === 0 && lineLength > 50) {
+                                wellFormatted = false;
+                                span += "<span class='block red' title='Recommended length for the summary line is <= 50 characters'>";
+                            } else if (i === 1 && lineLength > 0) {
+                                wellFormatted = false;
+                                span += "<span class='block red' title='Must be an empty line' class='block yellow'>";
+                            } else if (i > 1 && lineLength > 72) {
+                                wellFormatted = false;
+                                span += "<span class='block red' title='Recommended length for the description lines is <= 72 characters'>";
+                            } else {
+                                span += "<span class='block'>";
+                            }
+
+                            if (lineLength < 10) {
+                                lineLength = '0' + lineLength;
+                            }
+
+                            span += lineLength;
+                            span += "</span>";
+                            tempArr.push(span);
+                        }
+
+                        if (!wellFormatted) {
+                            this.classList.add("redBorder");
+                        } else {
+                            this.classList.remove("redBorder");
+                        }
+
+                        $charCounterArea.html('');
+
+                        for (var i = 0; i < length; i++) {
+                            $charCounterArea.append(tempArr[i]);
+                        }
+                    }
+                });
+
+
+            }
+
+
+
+
+
+            (function ($) {
+                $CharCount("a");
+            })(jQuery);
+
+        </script>
+    </body>
+</html>
